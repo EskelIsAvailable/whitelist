@@ -8,7 +8,7 @@ def load_rules(path: str) -> list[str]:
     Функция выгрузки правил из файла '.whitelist'.
 
         Args:
-            path: путь до директории с '.whitelist'.
+            path: путь до файла '.whitelist'.
 
         Правило: путь до файла/директории или glob expression.
 
@@ -17,7 +17,7 @@ def load_rules(path: str) -> list[str]:
     if os.path.exists(path):  # Если путь до файла существует, открывает и читает его
         with open(path, "r", encoding="utf-8") as file:
             return file.read().strip().splitlines()
-    return
+    return []
 
 
 # Функция сохранения правил в whitelist
@@ -26,13 +26,13 @@ def save_rules(path: str, rules: set):
     Функция сохранения правил в файле '.whitelist'.
 
         Args:
-            path: путь до директории с '.whitelist'.
+            path: путь до файла '.whitelist'.
             rules: список правил.
 
         Правило: путь до файла/директории или glob expression.
 
     """
-    with open(path, "w", encoding="utf-8") as file:
+    with open(path, "w+", encoding="utf-8") as file:
         file.write("\n".join(rules))
     return
 
@@ -51,7 +51,7 @@ def add(path: str, rules: list[str]):
         оставляем в правилах только foo .
 
     """
-    whitelist_file = path
+    whitelist_file = path + r"\.whitelist.txt"
     present_rules = set(load_rules(whitelist_file))
     new_rules = set()
     remove_rules = set()
@@ -64,6 +64,8 @@ def add(path: str, rules: list[str]):
                 if os.path.commonpath([r, rule]) == rule:
                     new_rules.add(rule)
                     remove_rules.add(r)
+                if os.path.commonpath([rule, r]) == r:
+                    break
                 else:
                     new_rules.add(rule)
 
@@ -85,7 +87,7 @@ def remove(path: str, rules: list[str]):
         Правило: путь до файла/директории или glob expression.
 
     """
-    whitelist_file = path
+    whitelist_file = path + r"\.whitelist.txt"
     present_rules = set(load_rules(whitelist_file))
 
     for rule in rules:
@@ -103,7 +105,7 @@ def cheker(path: str):
         Args:
             path: путь до директории с '.whitelist'.
     """
-    whitelist_file = path
+    whitelist_file = path + r"\.whitelist.txt"
     present_rules = load_rules(whitelist_file)
 
     def access_cheker(file_path: str):
@@ -111,8 +113,3 @@ def cheker(path: str):
         return any(fnmatch.fnmatch(file_path, rule) for rule in present_rules)
 
     return access_cheker
-
-
-##Google coding style - смотреть
-# Github
-# Black packet - форматирование
